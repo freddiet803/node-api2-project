@@ -127,9 +127,74 @@ router.post('/:id/comments', (req, res) => {
 
 //** PUT REQUEST*/
 
+//put or edit post by id
+
+router.put('/:id', (req, res) => {
+  const id = req.params.id;
+  const updatedPost = req.body;
+
+  db.findById(id)
+    .then(postExist => {
+      if (postExist.length > 0) {
+        if (updatedPost.title && updatedPost.contents) {
+          db.update(id, updatedPost)
+            .then(updatedPostNew => {
+              res.status(200).json(updatedPost);
+            })
+            .catch(err => {
+              res
+                .status(500)
+                .json({ error: 'The post information could not be modified' });
+            });
+        } else {
+          res.status(400).json({
+            errorMessage: 'Please provide title and contents for the post'
+          });
+        }
+      } else {
+        res
+          .status(404)
+          .json({ message: 'The post with the specified ID does not exist' });
+      }
+    })
+    .catch(err => {
+      res
+        .status(404)
+        .json({ message: 'The post with the specified ID does not exist' });
+    });
+});
+
 //** END OF PUT REQUEST*/
 
 //**DELETE REQUEST */
+
+//delete post by id
+router.delete('/:id', (req, res) => {
+  const id = req.params.id;
+
+  db.findById(id)
+    .then(post => {
+      if (post.length > 0) {
+        const deletePost = post;
+        db.remove(id)
+          .then(deleted => {
+            res.status(200).json(deletePost);
+          })
+          .catch(err => {
+            res.status(500).json({ error: 'The post could not be removed' });
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: 'The post with the specified ID does not exist' });
+      }
+    })
+    .catch(err => {
+      res
+        .status(404)
+        .json({ message: 'The post with the specified ID does not exist.' });
+    });
+});
 
 //**END OF DELETE REQUEST */
 module.exports = router;
